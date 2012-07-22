@@ -16,50 +16,45 @@ import android.widget.Toast;
 public class RemoteCalculatorActivity extends Activity {
     /** Called when the activity is first created. */
 	
-	CalculatorInterface cInterface;
+	private CalculatorInterface cInterface;
 	
-	public Button addButton;
-	public Button subButton;
-	public Button mulButton;
-	public Button divButton;
+	private Button addButton;
+	private Button subButton;
+	private Button mulButton;
+	private Button divButton;
 	
-	public EditText elem1;
-	public EditText elem2;
+	private EditText elem1;
+	private EditText elem2;
 	
-	public EditText result;
+	private EditText result;
 	
-	public Button clearButton;
+	private Button clearButton;
 	
-	Point values = null;
+	private Point values = null;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        
         boolean connected = this.bindService(new Intent(RemoteCalculatorActivity.this, CalculatorService.class), connection, BIND_AUTO_CREATE);
-        if(connected)
-        {
-        setContentView(R.layout.main);
-        setupUI();
+        
+        if(connected) {
+        	setContentView(R.layout.main);
+        	setupUI();
+        } else {
+        	Toast.makeText(RemoteCalculatorActivity.this, "Service not found", Toast.LENGTH_SHORT).show();
         }
-        else
-        Toast.makeText(RemoteCalculatorActivity.this, "Service not found", Toast.LENGTH_SHORT).show();
         	
     }
     
-    
-    ServiceConnection connection = new ServiceConnection() {
+    private ServiceConnection connection = new ServiceConnection() {
 
 		public void onServiceConnected(ComponentName name, IBinder service) {
-			// TODO Auto-generated method stub
 			cInterface = CalculatorInterface.Stub.asInterface((IBinder)service);
 			Toast.makeText(RemoteCalculatorActivity.this, "Successfully binded to a service", Toast.LENGTH_SHORT).show();
-			
 		}
 
 		public void onServiceDisconnected(ComponentName name) {
-			// TODO Auto-generated method stub
 			cInterface = null;
 		}
     	
@@ -86,10 +81,9 @@ public class RemoteCalculatorActivity extends Activity {
     	
     }
     
-    View.OnClickListener buttonListener = new View.OnClickListener() {
+    private View.OnClickListener buttonListener = new View.OnClickListener() {
 		
 		public void onClick(View v) {
-			// TODO Auto-generated method stub
 			switch(v.getId()) {
 			case R.id.addButton:
 				callService(0);
@@ -109,36 +103,33 @@ public class RemoteCalculatorActivity extends Activity {
 				elem2.setText("");
 				result.setText("");
 				break;
-			
 			}
 			
 		}
 	};
 	
-	public Point getValues()
-	{
+	private Point getValues() {
 		int a = 0;
 		int b = 0;
+		
 		try {
-		a = Integer.valueOf(elem1.getText().toString());
-		b = Integer.valueOf(elem2.getText().toString());
-		}
-		catch (NumberFormatException e)
-		{
+			a = Integer.valueOf(elem1.getText().toString());
+			b = Integer.valueOf(elem2.getText().toString());
+		} catch (NumberFormatException e) {
 			Toast.makeText(RemoteCalculatorActivity.this, "Invalid integer values", Toast.LENGTH_SHORT).show();
 			return null;
 		}
 		Point p = new Point(a, b);
 		return p;
-		
 	}
 	
-	public void callService(int op) {
-		values = getValues();
-		if(values == null) return;
-		
+	private void callService(int op) {
 		int res = 0;
 		
+		values = getValues();
+		if(values == null) 
+			return;
+	
 		try {
 			switch(op) {
 			case 0:
@@ -155,11 +146,9 @@ public class RemoteCalculatorActivity extends Activity {
 				break;
 			}
 			result.setText(String.valueOf(res));
-		}
-		catch (RemoteException e) {
+		} catch (RemoteException e) {
 			Toast.makeText(RemoteCalculatorActivity.this, "Service unavailable", Toast.LENGTH_SHORT).show();
-		}
-		catch (RuntimeException e) {
+		} catch (RuntimeException e) {
 			Toast.makeText(RemoteCalculatorActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
 		}
 	}
@@ -168,7 +157,5 @@ public class RemoteCalculatorActivity extends Activity {
  	   super.onDestroy();
  	   this.unbindService(connection);
  	   cInterface = null;
- 	   
- 	   
     };
 }
